@@ -237,10 +237,10 @@ export function MetricsDashboard({ projects }: { projects: Project[] }) {
     <div className="flex flex-col gap-6">
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <KpiCard icon={FolderOpen} label="Proyectos activos" value={active.length} />
+        <KpiCard icon={FolderOpen} label="Total proyectos" value={all.length} />
         <KpiCard icon={Clock} label="En curso" value={inProgressCount} />
         <KpiCard icon={CheckCircle2} label="Completados" value={completedCount} />
-        <KpiCard icon={TrendingUp} label="Tasa de finalización" value={`${completionRate}%`} sub={`${completedCount} de ${active.length}`} />
+        <KpiCard icon={TrendingUp} label="Tasa de finalización" value={`${completionRate}%`} sub={`${completedCount} de ${all.length}`} />
         <KpiCard icon={AlertTriangle} label="Vencidos" value={deadlineStats.overdue} sub={`de ${deadlineStats.withDeadline} con fecha límite`} />
       </div>
 
