@@ -19,7 +19,7 @@ import { MetricsDashboard } from "@/components/metrics-dashboard"
 import { DeadlineBadge } from "@/components/deadline-badge"
 
 type View = "projects" | "metrics"
-type SortKey = "name" | "status" | "responsables" | "updatedAt" | "notas" | "enlaces"
+type SortKey = "name" | "status" | "deadline" | "responsables" | "updatedAt" | "notas" | "enlaces"
 type SortDir = "asc" | "desc"
 
 export function Dashboard({
@@ -89,6 +89,9 @@ export function Dashboard({
           break
         case "notas":
           cmp = (a.notas || "").localeCompare(b.notas || "", "es")
+          break
+        case "deadline":
+          cmp = (a.deadline ?? "9999").localeCompare(b.deadline ?? "9999")
           break
         case "enlaces":
           cmp = a.attachments.length - b.attachments.length
@@ -365,6 +368,7 @@ export function Dashboard({
                       {([
                         ["name", "Proyecto", ""],
                         ["status", "Estado", ""],
+                        ["deadline", "Fecha límite", ""],
                         ["responsables", "Responsables", ""],
                         ["updatedAt", "Última actualización", ""],
                         ["notas", "Notas", ""],
@@ -390,7 +394,7 @@ export function Dashboard({
                   <tbody>
                     {filtered.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                        <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                           No se encontraron proyectos con los filtros aplicados.
                         </td>
                       </tr>
@@ -409,10 +413,10 @@ export function Dashboard({
                             </button>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex flex-col gap-1">
-                              <StatusBadge status={p.status} />
-                              <DeadlineBadge deadline={p.deadline} status={p.status} />
-                            </div>
+                            <StatusBadge status={p.status} />
+                          </td>
+                          <td className="px-4 py-3">
+                            <DeadlineBadge deadline={p.deadline} status={p.status} />
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-1">
