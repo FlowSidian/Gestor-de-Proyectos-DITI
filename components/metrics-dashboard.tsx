@@ -3,11 +3,12 @@
 import { useMemo } from "react"
 import { BarChart3, CheckCircle2, Clock, FolderOpen, TrendingUp } from "lucide-react"
 import type { Project } from "@/lib/types"
+import { StatusBadge } from "@/components/status-badge"
 
-const STATUS_COLORS: Record<string, { bg: string; fill: string }> = {
-  Completado: { bg: "bg-[oklch(0.92_0.06_150)]", fill: "oklch(0.55 0.12 150)" },
-  "En curso": { bg: "bg-[oklch(0.93_0.05_240)]", fill: "oklch(0.55 0.12 240)" },
-  "No iniciado": { bg: "bg-muted", fill: "oklch(0.6 0.02 250)" },
+const STATUS_COLORS: Record<string, string> = {
+  Completado: "oklch(0.55 0.12 150)",
+  "En curso": "oklch(0.55 0.12 240)",
+  "No iniciado": "oklch(0.6 0.02 250)",
 }
 
 function KpiCard({
@@ -101,14 +102,15 @@ function HorizontalBarChart({ data }: { data: { label: string; value: number }[]
           <span className="w-28 shrink-0 truncate text-right text-sm text-foreground" title={d.label}>
             {d.label}
           </span>
-          <div className="relative h-7 flex-1 overflow-hidden rounded-md bg-muted">
+          <div className="h-7 flex-1 overflow-hidden rounded-md bg-muted">
             <div
-              className="absolute inset-y-0 left-0 rounded-md bg-primary/70 transition-all"
+              className="flex h-full items-center rounded-md bg-primary/20"
               style={{ width: `${(d.value / max) * 100}%` }}
-            />
-            <span className="relative z-10 flex h-full items-center px-2 text-xs font-semibold text-foreground">
-              {d.value}
-            </span>
+            >
+              <span className="px-2 text-xs font-semibold text-foreground">
+                {d.value}
+              </span>
+            </div>
           </div>
         </div>
       ))}
@@ -174,7 +176,7 @@ export function MetricsDashboard({ projects }: { projects: Project[] }) {
     return Object.entries(counts).map(([label, value]) => ({
       label,
       value,
-      color: STATUS_COLORS[label]?.fill ?? "gray",
+      color: STATUS_COLORS[label] ?? "gray",
     }))
   }, [active])
 
@@ -276,12 +278,7 @@ export function MetricsDashboard({ projects }: { projects: Project[] }) {
                   <tr key={p.id} className="border-b border-border last:border-0">
                     <td className="py-2 pr-4 font-medium text-foreground">{p.name}</td>
                     <td className="py-2 pr-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status]?.bg ?? ""}`}
-                      >
-                        <span className="size-1.5 rounded-full bg-current" />
-                        {p.status}
-                      </span>
+                      <StatusBadge status={p.status} />
                     </td>
                     <td className="py-2 whitespace-nowrap text-muted-foreground">{formatDate(p.updatedAt)}</td>
                   </tr>
