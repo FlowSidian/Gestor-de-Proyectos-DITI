@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import {
-  LogOut, Plus, Search, Link2, Archive, ArchiveRestore, Pencil, Eye,
+  LogOut, Plus, Search, Link2, ExternalLink, Archive, ArchiveRestore, Pencil, Eye,
   BarChart3, LayoutList, Settings, ArrowUp, ArrowDown, ArrowUpDown,
 } from "lucide-react"
 import type { Project, ProjectStatus, Role, Responsable } from "@/lib/types"
@@ -444,10 +444,34 @@ export function Dashboard({
                             </p>
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className="inline-flex items-center gap-1 text-muted-foreground">
-                              <Link2 className="size-3.5" />
-                              {p.attachments.length}
-                            </span>
+                            {p.attachments.length > 0 ? (
+                              <div className="group relative inline-flex items-center gap-1 text-muted-foreground cursor-default">
+                                <Link2 className="size-3.5" />
+                                {p.attachments.length}
+                                <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-max max-w-xs -translate-x-1/2 rounded-lg border border-border bg-popover p-2 text-left text-xs shadow-lg group-hover:pointer-events-auto group-hover:block">
+                                  <ul className="flex flex-col gap-1">
+                                    {p.attachments.map((a) => (
+                                      <li key={a.id}>
+                                        <a
+                                          href={a.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="flex items-center gap-1.5 text-primary hover:underline"
+                                        >
+                                          <ExternalLink className="size-3 shrink-0" />
+                                          <span className="truncate">{a.descripcion || a.url}</span>
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                <Link2 className="size-3.5" />
+                                0
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center justify-end gap-1">
