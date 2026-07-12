@@ -16,6 +16,7 @@ import { ProjectDetail } from "@/components/project-detail"
 import { ProjectFormModal } from "@/components/project-form-modal"
 import { ResponsablesManager } from "@/components/responsables-manager"
 import { MetricsDashboard } from "@/components/metrics-dashboard"
+import { DeadlineBadge } from "@/components/deadline-badge"
 
 type View = "projects" | "metrics"
 type SortKey = "name" | "status" | "responsables" | "updatedAt" | "notas" | "enlaces"
@@ -308,6 +309,11 @@ export function Dashboard({
                       </button>
                       <StatusBadge status={p.status} />
                     </div>
+                    {p.deadline ? (
+                      <div className="mb-2">
+                        <DeadlineBadge deadline={p.deadline} status={p.status} />
+                      </div>
+                    ) : null}
                     <div className="mb-2 flex flex-wrap gap-1">
                       {p.responsables.map((r) => (
                         <span key={r} className="rounded-md bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
@@ -402,7 +408,10 @@ export function Dashboard({
                             </button>
                           </td>
                           <td className="px-4 py-3">
-                            <StatusBadge status={p.status} />
+                            <div className="flex flex-col gap-1">
+                              <StatusBadge status={p.status} />
+                              <DeadlineBadge deadline={p.deadline} status={p.status} />
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-1">

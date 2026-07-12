@@ -103,22 +103,37 @@ export function ProjectFormModal({
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="status" className="text-sm font-medium text-foreground">
-            Estado
-          </label>
-          <select
-            id="status"
-            name="status"
-            defaultValue={project?.status ?? "No iniciado"}
-            className={fieldClass}
-          >
-            {PROJECT_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="status" className="text-sm font-medium text-foreground">
+              Estado
+            </label>
+            <select
+              id="status"
+              name="status"
+              defaultValue={project?.status ?? "No iniciado"}
+              className={fieldClass}
+            >
+              {PROJECT_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="deadline" className="text-sm font-medium text-foreground">
+              Fecha límite <span className="text-muted-foreground font-normal">(opcional)</span>
+            </label>
+            <input
+              id="deadline"
+              name="deadline"
+              type="date"
+              defaultValue={project?.deadline?.split("T")[0] ?? ""}
+              className={fieldClass}
+            />
+          </div>
         </div>
 
         {/* Multi-select de responsables */}

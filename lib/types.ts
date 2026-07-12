@@ -19,6 +19,7 @@ export interface Project {
   responsables: string[]
   notas: string
   archived: boolean
+  deadline: string | null
   updatedAt: string
   createdAt: string
   attachments: Attachment[]

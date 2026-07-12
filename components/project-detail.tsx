@@ -7,6 +7,7 @@ import { getHistory, addAttachment, removeAttachment } from "@/app/actions/proje
 import { Modal } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
 import { StatusBadge } from "@/components/status-badge"
+import { DeadlineBadge } from "@/components/deadline-badge"
 
 const fieldClass =
   "h-9 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
@@ -60,6 +61,7 @@ export function ProjectDetail({
     <Modal open onClose={onClose} title={project.name}>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <StatusBadge status={project.status} />
+        <DeadlineBadge deadline={project.deadline} status={project.status} />
         <span className="text-xs text-muted-foreground">
           Actualizado {formatDate(project.updatedAt)}
         </span>

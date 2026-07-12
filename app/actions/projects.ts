@@ -21,7 +21,7 @@ async function actorLabel() {
 export async function getProjects(): Promise<Project[]> {
   const rows = await sql`
     SELECT p.id, p.name, p.status, p.responsables, p.notas, p.archived,
-           p.updated_at, p.created_at,
+           p.deadline, p.updated_at, p.created_at,
            COALESCE(
              json_agg(
                json_build_object(
@@ -43,6 +43,7 @@ export async function getProjects(): Promise<Project[]> {
     responsables: (r.responsables as string[]) ?? [],
     notas: r.notas as string,
     archived: r.archived as boolean,
+    deadline: r.deadline ? String(r.deadline) : null,
     updatedAt: String(r.updated_at),
     createdAt: String(r.created_at),
     attachments: r.attachments as Attachment[],
@@ -96,6 +97,9 @@ export async function createProject(formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean)
 
+  const deadlineRaw = String(formData.get("deadline") ?? "").trim()
+  const deadline = deadlineRaw || null
+
   if (!name) throw new Error("El nombre es obligatorio")
 
   const links: { url: string; descripcion: string }[] = JSON.parse(
@@ -103,8 +107,8 @@ export async function createProject(formData: FormData) {
   )
 
   const rows = await sql`
-    INSERT INTO projects (name, status, responsables, notas)
-    VALUES (${name}, ${status}, ${responsables}, ${notas})
+    INSERT INTO projects (name, status, responsables, notas, deadline)
+    VALUES (${name}, ${status}, ${responsables}, ${notas}, ${deadline})
     RETURNING id
   `
   const id = rows[0].id as number
@@ -135,7 +139,10 @@ export async function updateProject(formData: FormData) {
     String(formData.get("links") ?? "[]"),
   )
 
-  const existing = await sql`SELECT name, status, responsables, notas FROM projects WHERE id = ${id}`
+  const deadlineRaw = String(formData.get("deadline") ?? "").trim()
+  const deadline = deadlineRaw || null
+
+  const existing = await sql`SELECT name, status, responsables, notas, deadline FROM projects WHERE id = ${id}`
   if (existing.length === 0) throw new Error("Proyecto no encontrado")
   const prev = existing[0]
 
@@ -145,6 +152,8 @@ export async function updateProject(formData: FormData) {
   const prevResp = ((prev.responsables as string[]) ?? []).join(", ")
   const newResp = responsables.join(", ")
   if (prevResp !== newResp) await logChange(id, "Responsables", prevResp, newResp, actor)
+  const prevDeadline = prev.deadline ? String(prev.deadline) : null
+  if (prevDeadline !== deadline) await logChange(id, "Fecha límite", prevDeadline, deadline, actor)
 
   await sql`DELETE FROM attachments WHERE project_id = ${id}`
   for (const link of links) {
@@ -155,7 +164,7 @@ export async function updateProject(formData: FormData) {
   await sql`
     UPDATE projects
     SET name = ${name}, status = ${status}, responsables = ${responsables},
-        notas = ${notas}, updated_at = now()
+        notas = ${notas}, deadline = ${deadline}, updated_at = now()
     WHERE id = ${id}
   `
   revalidatePath("/")
