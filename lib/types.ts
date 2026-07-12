@@ -33,3 +33,9 @@ export interface ChangeHistoryEntry {
   changedBy: string
   changedAt: string
 }
+
+export interface Responsable {
+  id: number
+  name: string
+  createdAt: string
+}

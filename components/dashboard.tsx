@@ -1,8 +1,11 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { LogOut, Plus, Search, Link2, Archive, ArchiveRestore, Pencil, Eye } from "lucide-react"
-import type { Project, ProjectStatus, Role } from "@/lib/types"
+import {
+  LogOut, Plus, Search, Link2, Archive, ArchiveRestore, Pencil, Eye,
+  BarChart3, LayoutList, Settings,
+} from "lucide-react"
+import type { Project, ProjectStatus, Role, Responsable } from "@/lib/types"
 import { PROJECT_STATUSES } from "@/lib/types"
 import { logout } from "@/app/actions/auth"
 import { setArchived } from "@/app/actions/projects"
@@ -11,10 +14,23 @@ import { StatusBadge } from "@/components/status-badge"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ProjectDetail } from "@/components/project-detail"
 import { ProjectFormModal } from "@/components/project-form-modal"
+import { ResponsablesManager } from "@/components/responsables-manager"
+import { MetricsDashboard } from "@/components/metrics-dashboard"
 
-export function Dashboard({ projects, role }: { projects: Project[]; role: Role }) {
+type View = "projects" | "metrics"
+
+export function Dashboard({
+  projects,
+  role,
+  responsables,
+}: {
+  projects: Project[]
+  role: Role
+  responsables: Responsable[]
+}) {
   const isAdmin = role === "admin"
 
+  const [view, setView] = useState<View>("projects")
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "todos">("todos")
   const [responsableFilter, setResponsableFilter] = useState<string>("todos")
@@ -23,12 +39,11 @@ export function Dashboard({ projects, role }: { projects: Project[]; role: Role 
   const [detailProject, setDetailProject] = useState<Project | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [editProject, setEditProject] = useState<Project | null>(null)
+  const [respManagerOpen, setRespManagerOpen] = useState(false)
 
   const allResponsables = useMemo(() => {
-    const set = new Set<string>()
-    projects.forEach((p) => p.responsables.forEach((r) => set.add(r)))
-    return Array.from(set).sort()
-  }, [projects])
+    return responsables.map((r) => r.name).sort()
+  }, [responsables])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -81,9 +96,38 @@ export function Dashboard({ projects, role }: { projects: Project[]; role: Role 
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex rounded-lg border border-border bg-muted p-0.5">
+              <button
+                onClick={() => setView("projects")}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  view === "projects" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <LayoutList className="size-3.5" />
+                Proyectos
+              </button>
+              <button
+                onClick={() => setView("metrics")}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  view === "metrics" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BarChart3 className="size-3.5" />
+                Métricas
+              </button>
+            </div>
+
             <span className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
               {isAdmin ? "Administrador" : "Visitante"}
             </span>
+
+            {isAdmin ? (
+              <Button variant="outline" size="icon" onClick={() => setRespManagerOpen(true)} aria-label="Gestionar responsables">
+                <Settings />
+              </Button>
+            ) : null}
+
             <ThemeToggle />
             <form action={logout}>
               <Button variant="outline" size="icon" type="submit" aria-label="Cerrar sesión">
@@ -95,187 +139,193 @@ export function Dashboard({ projects, role }: { projects: Project[]; role: Role 
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {/* Toolbar */}
-        <div className="mb-5 flex flex-col gap-3">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full lg:max-w-sm">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar por nombre o notas..."
-                className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
-              />
-            </div>
+        {view === "metrics" ? (
+          <MetricsDashboard projects={projects} />
+        ) : (
+          <>
+            {/* Toolbar */}
+            <div className="mb-5 flex flex-col gap-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="relative w-full lg:max-w-sm">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar por nombre o notas..."
+                    className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+                  />
+                </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as ProjectStatus | "todos")}
-                aria-label="Filtrar por estado"
-                className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
-              >
-                <option value="todos">Todos los estados</option>
-                {PROJECT_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as ProjectStatus | "todos")}
+                    aria-label="Filtrar por estado"
+                    className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+                  >
+                    <option value="todos">Todos los estados</option>
+                    {PROJECT_STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
 
-              <select
-                value={responsableFilter}
-                onChange={(e) => setResponsableFilter(e.target.value)}
-                aria-label="Filtrar por responsable"
-                className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
-              >
-                <option value="todos">Todos los responsables</option>
-                {allResponsables.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
+                  <select
+                    value={responsableFilter}
+                    onChange={(e) => setResponsableFilter(e.target.value)}
+                    aria-label="Filtrar por responsable"
+                    className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40"
+                  >
+                    <option value="todos">Todos los responsables</option>
+                    {allResponsables.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
 
-              <Button
-                variant={showArchived ? "secondary" : "outline"}
-                onClick={() => setShowArchived((v) => !v)}
-              >
-                <Archive />
-                {showArchived ? "Viendo archivados" : "Ver archivados"}
-              </Button>
+                  <Button
+                    variant={showArchived ? "secondary" : "outline"}
+                    onClick={() => setShowArchived((v) => !v)}
+                  >
+                    <Archive />
+                    {showArchived ? "Viendo archivados" : "Ver archivados"}
+                  </Button>
 
-              {isAdmin ? (
-                <Button
-                  onClick={() => {
-                    setEditProject(null)
-                    setFormOpen(true)
-                  }}
-                >
-                  <Plus />
-                  Nuevo proyecto
-                </Button>
-              ) : null}
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {filtered.length} {filtered.length === 1 ? "proyecto" : "proyectos"}
-            {showArchived ? " archivados" : " activos"}
-          </p>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[880px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/50 text-left">
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Proyecto</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Estado</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Responsables</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Última actualización</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Notas</th>
-                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">Enlaces</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
-                      No se encontraron proyectos con los filtros aplicados.
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="border-b border-border last:border-0 transition-colors hover:bg-muted/40"
+                  {isAdmin ? (
+                    <Button
+                      onClick={() => {
+                        setEditProject(null)
+                        setFormOpen(true)
+                      }}
                     >
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => setDetailProject(p)}
-                          className="text-left font-medium text-foreground hover:text-primary hover:underline"
-                        >
-                          {p.name}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={p.status} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {p.responsables.length === 0 ? (
-                            <span className="text-muted-foreground">—</span>
-                          ) : (
-                            p.responsables.map((r) => (
-                              <span
-                                key={r}
-                                className="rounded-md bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground"
-                              >
-                                {r}
-                              </span>
-                            ))
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
-                        {formatDate(p.updatedAt)}
-                      </td>
-                      <td className="max-w-[220px] px-4 py-3">
-                        <p className="truncate text-muted-foreground" title={p.notas}>
-                          {p.notas || "—"}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center gap-1 text-muted-foreground">
-                          <Link2 className="size-3.5" />
-                          {p.attachments.length}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => setDetailProject(p)}
-                            aria-label={`Ver detalle de ${p.name}`}
-                          >
-                            <Eye />
-                          </Button>
-                          {isAdmin ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                onClick={() => {
-                                  setEditProject(p)
-                                  setFormOpen(true)
-                                }}
-                                aria-label={`Editar ${p.name}`}
-                              >
-                                <Pencil />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                onClick={() => setArchived(p.id, !p.archived)}
-                                aria-label={p.archived ? `Restaurar ${p.name}` : `Archivar ${p.name}`}
-                              >
-                                {p.archived ? <ArchiveRestore /> : <Archive />}
-                              </Button>
-                            </>
-                          ) : null}
-                        </div>
-                      </td>
+                      <Plus />
+                      Nuevo proyecto
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {filtered.length} {filtered.length === 1 ? "proyecto" : "proyectos"}
+                {showArchived ? " archivados" : " activos"}
+              </p>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[880px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50 text-left">
+                      <th className="px-4 py-3 font-medium text-muted-foreground">Proyecto</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">Estado</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">Responsables</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">Última actualización</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">Notas</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">Enlaces</th>
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                          No se encontraron proyectos con los filtros aplicados.
+                        </td>
+                      </tr>
+                    ) : (
+                      filtered.map((p) => (
+                        <tr
+                          key={p.id}
+                          className="border-b border-border last:border-0 transition-colors hover:bg-muted/40"
+                        >
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => setDetailProject(p)}
+                              className="text-left font-medium text-foreground hover:text-primary hover:underline"
+                            >
+                              {p.name}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3">
+                            <StatusBadge status={p.status} />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              {p.responsables.length === 0 ? (
+                                <span className="text-muted-foreground">—</span>
+                              ) : (
+                                p.responsables.map((r) => (
+                                  <span
+                                    key={r}
+                                    className="rounded-md bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground"
+                                  >
+                                    {r}
+                                  </span>
+                                ))
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
+                            {formatDate(p.updatedAt)}
+                          </td>
+                          <td className="max-w-[220px] px-4 py-3">
+                            <p className="truncate text-muted-foreground" title={p.notas}>
+                              {p.notas || "—"}
+                            </p>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center gap-1 text-muted-foreground">
+                              <Link2 className="size-3.5" />
+                              {p.attachments.length}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => setDetailProject(p)}
+                                aria-label={`Ver detalle de ${p.name}`}
+                              >
+                                <Eye />
+                              </Button>
+                              {isAdmin ? (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={() => {
+                                      setEditProject(p)
+                                      setFormOpen(true)
+                                    }}
+                                    aria-label={`Editar ${p.name}`}
+                                  >
+                                    <Pencil />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={() => setArchived(p.id, !p.archived)}
+                                    aria-label={p.archived ? `Restaurar ${p.name}` : `Archivar ${p.name}`}
+                                  >
+                                    {p.archived ? <ArchiveRestore /> : <Archive />}
+                                  </Button>
+                                </>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
       </main>
 
       {detailProject ? (
@@ -289,7 +339,15 @@ export function Dashboard({ projects, role }: { projects: Project[]; role: Role 
       {formOpen ? (
         <ProjectFormModal
           project={editProject}
+          responsables={responsables}
           onClose={() => setFormOpen(false)}
+        />
+      ) : null}
+
+      {respManagerOpen ? (
+        <ResponsablesManager
+          responsables={responsables}
+          onClose={() => setRespManagerOpen(false)}
         />
       ) : null}
     </div>

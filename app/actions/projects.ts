@@ -98,12 +98,22 @@ export async function createProject(formData: FormData) {
 
   if (!name) throw new Error("El nombre es obligatorio")
 
+  const links: { url: string; descripcion: string }[] = JSON.parse(
+    String(formData.get("links") ?? "[]"),
+  )
+
   const rows = await sql`
     INSERT INTO projects (name, status, responsables, notas)
     VALUES (${name}, ${status}, ${responsables}, ${notas})
     RETURNING id
   `
   const id = rows[0].id as number
+
+  for (const link of links) {
+    if (!link.url) continue
+    await sql`INSERT INTO attachments (project_id, url, descripcion) VALUES (${id}, ${link.url}, ${link.descripcion})`
+  }
+
   await logChange(id, "Creación", null, `Proyecto "${name}" creado`, actor)
   revalidatePath("/")
 }
@@ -121,17 +131,26 @@ export async function updateProject(formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean)
 
+  const links: { url: string; descripcion: string }[] = JSON.parse(
+    String(formData.get("links") ?? "[]"),
+  )
+
   const existing = await sql`SELECT name, status, responsables, notas FROM projects WHERE id = ${id}`
   if (existing.length === 0) throw new Error("Proyecto no encontrado")
   const prev = existing[0]
 
-  // Registrar cada cambio en el historial ANTES de guardar
   if (prev.name !== name) await logChange(id, "Nombre", prev.name as string, name, actor)
   if (prev.status !== status) await logChange(id, "Estado", prev.status as string, status, actor)
   if (prev.notas !== notas) await logChange(id, "Notas", prev.notas as string, notas, actor)
   const prevResp = ((prev.responsables as string[]) ?? []).join(", ")
   const newResp = responsables.join(", ")
   if (prevResp !== newResp) await logChange(id, "Responsables", prevResp, newResp, actor)
+
+  await sql`DELETE FROM attachments WHERE project_id = ${id}`
+  for (const link of links) {
+    if (!link.url) continue
+    await sql`INSERT INTO attachments (project_id, url, descripcion) VALUES (${id}, ${link.url}, ${link.descripcion})`
+  }
 
   await sql`
     UPDATE projects
