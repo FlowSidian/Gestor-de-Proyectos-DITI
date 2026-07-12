@@ -12,11 +12,11 @@ async function requireAdmin() {
 
 export async function getResponsables(): Promise<Responsable[]> {
   const rows = await sql`
-    SELECT id, name, created_at FROM responsables ORDER BY name
+    SELECT id, nombre, created_at FROM responsables ORDER BY nombre
   `
   return rows.map((r: Record<string, unknown>) => ({
     id: r.id as number,
-    name: r.name as string,
+    name: r.nombre as string,
     createdAt: String(r.created_at),
   }))
 }
@@ -26,10 +26,10 @@ export async function addResponsable(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim()
   if (!name) throw new Error("El nombre es obligatorio")
 
-  const existing = await sql`SELECT id FROM responsables WHERE lower(name) = lower(${name})`
+  const existing = await sql`SELECT id FROM responsables WHERE lower(nombre) = lower(${name})`
   if (existing.length > 0) throw new Error("Ya existe un responsable con ese nombre")
 
-  await sql`INSERT INTO responsables (name) VALUES (${name})`
+  await sql`INSERT INTO responsables (nombre) VALUES (${name})`
   revalidatePath("/")
 }
 
