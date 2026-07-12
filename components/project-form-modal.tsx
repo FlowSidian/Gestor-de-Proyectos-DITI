@@ -241,11 +241,11 @@ export function ProjectFormModal({
           </p>
         ) : null}
 
-        <div className="flex items-center justify-end gap-2 pt-1">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
+        <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-end">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isPending} className="w-full sm:w-auto">
             Cancelar
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
             {isPending ? "Guardando..." : isEdit ? "Guardar cambios" : "Crear proyecto"}
           </Button>
         </div>
