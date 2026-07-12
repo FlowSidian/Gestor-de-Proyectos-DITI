@@ -43,7 +43,7 @@ export async function getProjects(): Promise<Project[]> {
     responsables: (r.responsables as string[]) ?? [],
     notas: r.notas as string,
     archived: r.archived as boolean,
-    deadline: r.deadline ? String(r.deadline) : null,
+    deadline: r.deadline ? (r.deadline instanceof Date ? r.deadline.toISOString().slice(0, 10) : String(r.deadline).slice(0, 10)) : null,
     updatedAt: String(r.updated_at),
     createdAt: String(r.created_at),
     attachments: r.attachments as Attachment[],
