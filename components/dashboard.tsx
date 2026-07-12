@@ -115,7 +115,7 @@ export function Dashboard({
     <div className="min-h-dvh bg-background">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="mx-auto flex max-w-[90rem] flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <svg
@@ -188,7 +188,7 @@ export function Dashboard({
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-[90rem] px-4 py-6 sm:px-6">
         {view === "metrics" ? (
           <MetricsDashboard projects={projects} />
         ) : (
@@ -277,6 +277,7 @@ export function Dashboard({
                 <option value="">Sin orden</option>
                 <option value="name">Proyecto</option>
                 <option value="status">Estado</option>
+                <option value="deadline">Fecha límite</option>
                 <option value="responsables">Responsables</option>
                 <option value="updatedAt">Fecha</option>
                 <option value="notas">Notas</option>
@@ -362,7 +363,7 @@ export function Dashboard({
             {/* Desktop table */}
             <div className="hidden lg:block overflow-hidden rounded-xl border border-border bg-card">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[880px] border-collapse text-sm">
+                <table className="w-full min-w-[1020px] border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/50 text-left">
                       {([
