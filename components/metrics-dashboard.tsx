@@ -166,31 +166,31 @@ function MonthlyTrendChart({ data }: { data: { month: string; count: number }[] 
 }
 
 export function MetricsDashboard({ projects }: { projects: Project[] }) {
-  const active = projects.filter((p) => !p.archived)
+  const all = projects
 
   const statusData = useMemo(() => {
     const counts: Record<string, number> = { "No iniciado": 0, "En curso": 0, Completado: 0 }
-    active.forEach((p) => counts[p.status]++)
+    all.forEach((p) => counts[p.status]++)
     return Object.entries(counts).map(([label, value]) => ({
       label,
       value,
       color: STATUS_COLORS[label] ?? "gray",
     }))
-  }, [active])
+  }, [all])
 
   const responsableData = useMemo(() => {
     const counts: Record<string, number> = {}
-    active.forEach((p) => p.responsables.forEach((r) => {
+    all.forEach((p) => p.responsables.forEach((r) => {
       counts[r] = (counts[r] ?? 0) + 1
     }))
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .map(([label, value]) => ({ label, value }))
-  }, [active])
+  }, [all])
 
   const trendData = useMemo(() => {
     const months: Record<string, number> = {}
-    projects.forEach((p) => {
+    all.forEach((p) => {
       const d = new Date(p.createdAt)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
       months[key] = (months[key] ?? 0) + 1
@@ -203,22 +203,22 @@ export function MetricsDashboard({ projects }: { projects: Project[] }) {
         const label = new Date(Number(y), Number(m) - 1).toLocaleDateString("es-AR", { month: "short", year: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })
         return { month: label, count }
       })
-  }, [projects])
+  }, [all])
 
   const recentlyUpdated = useMemo(() => {
-    return [...active]
+    return [...all]
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 5)
-  }, [active])
+  }, [all])
 
-  const completedCount = active.filter((p) => p.status === "Completado").length
-  const inProgressCount = active.filter((p) => p.status === "En curso").length
-  const completionRate = active.length > 0 ? Math.round((completedCount / active.length) * 100) : 0
+  const completedCount = all.filter((p) => p.status === "Completado").length
+  const inProgressCount = all.filter((p) => p.status === "En curso").length
+  const completionRate = all.length > 0 ? Math.round((completedCount / all.length) * 100) : 0
 
   const deadlineStats = useMemo(() => {
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }))
     now.setHours(0, 0, 0, 0)
-    const withDeadline = active.filter((p) => p.deadline && p.status !== "Completado")
+    const withDeadline = all.filter((p) => p.deadline && p.status !== "Completado")
     const overdue = withDeadline.filter((p) => new Date(p.deadline + "T00:00:00") < now)
     const upcoming = withDeadline
       .filter((p) => {
@@ -228,7 +228,7 @@ export function MetricsDashboard({ projects }: { projects: Project[] }) {
       })
       .sort((a, b) => a.deadline!.localeCompare(b.deadline!))
     return { overdue: overdue.length, withDeadline: withDeadline.length, upcoming }
-  }, [active])
+  }, [all])
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" })
