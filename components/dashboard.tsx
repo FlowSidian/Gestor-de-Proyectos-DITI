@@ -448,7 +448,7 @@ export function Dashboard({
                               <div className="group relative inline-flex items-center gap-1 text-muted-foreground cursor-default">
                                 <Link2 className="size-3.5" />
                                 {p.attachments.length}
-                                <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-max max-w-xs -translate-x-1/2 rounded-lg border border-border bg-popover p-2 text-left text-xs shadow-lg group-hover:pointer-events-auto group-hover:block">
+                                <div className="invisible absolute bottom-full left-1/2 z-50 mb-2 w-max max-w-xs -translate-x-1/2 rounded-lg border border-border bg-popover p-2 text-left text-xs opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:opacity-100">
                                   <ul className="flex flex-col gap-1">
                                     {p.attachments.map((a) => (
                                       <li key={a.id}>
