@@ -5,6 +5,7 @@ import {
   LogOut, Plus, Search, Link2, ExternalLink, Archive, ArchiveRestore, Pencil, Eye,
   BarChart3, LayoutList, Settings, ArrowUp, ArrowDown, ArrowUpDown,
 } from "lucide-react"
+import { APP_NAME, ORG_NAME } from "@/lib/branding"
 import type { Project, ProjectStatus, Role, Responsable } from "@/lib/types"
 import { PROJECT_STATUSES } from "@/lib/types"
 import { logout } from "@/app/actions/auth"
@@ -137,9 +138,9 @@ export function Dashboard({
             </div>
             <div>
               <h1 className="text-sm font-semibold leading-tight text-foreground sm:text-base">
-                Gestión de Proyectos
+                {APP_NAME}
               </h1>
-              <p className="text-xs text-muted-foreground">Dirección de Innovación y Tecnología</p>
+              <p className="text-xs text-muted-foreground">{ORG_NAME}</p>
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

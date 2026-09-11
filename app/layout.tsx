@@ -2,19 +2,19 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
+import { APP_DESCRIPTION, APP_SHORT_TITLE, APP_TITLE } from '@/lib/branding'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'Gestión de Proyectos | Dirección de Innovación y Tecnología',
-  description:
-    'Aplicación de gestión y seguimiento de proyectos de la Dirección de Innovación y Tecnología.',
-  manifest: '/manifest.json',
+  title: APP_TITLE,
+  description: APP_DESCRIPTION,
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Proyectos DITI',
+    title: APP_SHORT_TITLE,
   },
 }
 
