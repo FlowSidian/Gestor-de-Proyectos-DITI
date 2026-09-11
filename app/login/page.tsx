@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getRole } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
+import { ORG_NAME } from "@/lib/branding"
 
 export default async function LoginPage() {
   const role = await getRole()
@@ -28,7 +29,7 @@ export default async function LoginPage() {
             </svg>
           </div>
           <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground">
-            Dirección de Innovación y Tecnología
+            {ORG_NAME}
           </h1>
           <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground">
             Sistema de gestión y seguimiento de proyectos
