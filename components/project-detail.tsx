@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
-import { ExternalLink, Plus, Trash2, History, Link2 } from "lucide-react"
+import { ExternalLink, Plus, Trash2, History, Info } from "lucide-react"
 import type { Project, ChangeHistoryEntry } from "@/lib/types"
 import { getHistory, addAttachment, removeAttachment } from "@/app/actions/projects"
 import { Modal } from "@/components/ui/modal"
@@ -83,7 +83,7 @@ export function ProjectDetail({
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Link2 className="size-4" />
+          <Info className="size-4" />
           Información
         </button>
         <button
